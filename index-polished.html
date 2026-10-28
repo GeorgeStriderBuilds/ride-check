@@ -1,0 +1,997 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17202B">
+<title>Ride check</title>
+<meta name="description" content="Ride check is a free motorcycle ride weather app. Check the current weather, the next 6 hours, the best dry window, wet-road warnings, a ride timer, and bike and gear checklists before you ride.">
+<meta property="og:title" content="Ride check">
+<meta property="og:description" content="Free motorcycle ride weather check: current weather, next 6 hours, best dry window, wet-road warnings, ride timer, and before-you-go checklists.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://georgestriderbuilds.github.io/ride-check/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%8D%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+:root{--sky1:#DDE3E8;--sky2:#C6D0D9;--ink:#17202B;--mut:#4F5B68;--card:rgba(255,255,255,.62);--line:rgba(23,32,43,.14);--tint:rgba(23,32,43,.07);--go:#1E8A57;--warn:#7A5200;--stop:#C0322A;--idle:rgba(23,32,43,.78);--on:#fff;--fx:none}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--sky1:#10161D;--sky2:#1B2430;--ink:#E8ECEF;--mut:#9AA5B1;--card:rgba(255,255,255,.07);--line:rgba(255,255,255,.13);--tint:rgba(255,255,255,.07)}}
+:root[data-theme="dark"]{--sky1:#10161D;--sky2:#1B2430;--ink:#E8ECEF;--mut:#9AA5B1;--card:rgba(255,255,255,.07);--line:rgba(255,255,255,.13);--tint:rgba(255,255,255,.07)}
+/* weather moods: the page background follows the current hour */
+body[data-mood="sunny"]{--sky1:#4FA8EA;--sky2:#FBE3A6;--ink:#0F2236;--mut:#34506A;--card:rgba(255,255,255,.58);--line:rgba(15,34,54,.14);--tint:rgba(15,34,54,.07);--fx:radial-gradient(circle at 84% 17%,rgba(255,248,214,.98) 0,rgba(255,238,170,.6) 70px,transparent 270px)}
+body[data-mood="partly"]{--sky1:#7BB1DA;--sky2:#E3EAF0;--ink:#11263A;--mut:#3A546B;--card:rgba(255,255,255,.58);--line:rgba(17,38,58,.14);--tint:rgba(17,38,58,.07);--fx:radial-gradient(circle at 84% 17%,rgba(255,250,225,.8) 0,transparent 200px)}
+body[data-mood="cloudy"]{--sky1:#8794A2;--sky2:#CDD3D9;--ink:#18222C;--mut:#46525E;--card:rgba(255,255,255,.55);--line:rgba(24,34,44,.14);--tint:rgba(24,34,44,.07)}
+body[data-mood="fog"]{--sky1:#B5BCC2;--sky2:#E4E6E8;--ink:#20292F;--mut:#4C575F;--card:rgba(255,255,255,.55);--line:rgba(32,41,47,.14);--tint:rgba(32,41,47,.07);--fx:linear-gradient(rgba(255,255,255,.45),transparent 60%)}
+body[data-mood="rain"]{--sky1:#34495D;--sky2:#6C8498;--ink:#F2F6F9;--mut:#C6D3DD;--card:rgba(15,24,34,.4);--line:rgba(255,255,255,.18);--tint:rgba(255,255,255,.08);--fx:repeating-linear-gradient(106deg,rgba(255,255,255,.08) 0 1px,transparent 1px 15px)}
+body[data-mood="storm"]{--sky1:#211A3F;--sky2:#51427C;--ink:#F4F0FF;--mut:#CFC6EA;--card:rgba(12,8,28,.42);--line:rgba(255,255,255,.18);--tint:rgba(255,255,255,.08);--fx:radial-gradient(circle at 18% 0,rgba(210,190,255,.5) 0,transparent 190px),repeating-linear-gradient(106deg,rgba(255,255,255,.07) 0 1px,transparent 1px 15px)}
+body[data-mood="snow"]{--sky1:#A9C2D9;--sky2:#F2F6FA;--ink:#14283C;--mut:#40586D;--card:rgba(255,255,255,.6);--line:rgba(20,40,60,.13);--tint:rgba(20,40,60,.07);--fx:radial-gradient(3px 3px at 12% 12%,#fff,transparent),radial-gradient(2px 2px at 34% 26%,#fff,transparent),radial-gradient(3px 3px at 58% 9%,#fff,transparent),radial-gradient(2px 2px at 78% 22%,#fff,transparent),radial-gradient(3px 3px at 90% 6%,#fff,transparent),radial-gradient(2px 2px at 22% 40%,#fff,transparent)}
+body[data-mood="night"]{--sky1:#080F2B;--sky2:#26346A;--ink:#EAF0FF;--mut:#AEBBDD;--card:rgba(255,255,255,.09);--line:rgba(255,255,255,.16);--tint:rgba(255,255,255,.08);--fx:radial-gradient(circle at 82% 19%,rgba(226,234,255,.95) 0,rgba(226,234,255,.95) 13px,rgba(200,215,255,.22) 14px,transparent 100px),radial-gradient(1.5px 1.5px at 12% 9%,#fff,transparent),radial-gradient(1px 1px at 30% 20%,#fff,transparent),radial-gradient(1.5px 1.5px at 56% 7%,#fff,transparent),radial-gradient(1px 1px at 72% 24%,#fff,transparent),radial-gradient(1px 1px at 44% 30%,#fff,transparent),radial-gradient(1.5px 1.5px at 22% 36%,#fff,transparent)}
+body[data-mood="nightcloud"]{--sky1:#141A27;--sky2:#2E384B;--ink:#E9EEF5;--mut:#A9B4C4;--card:rgba(255,255,255,.08);--line:rgba(255,255,255,.15);--tint:rgba(255,255,255,.07)}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{min-height:100vh;background:linear-gradient(180deg,var(--sky1),var(--sky2)) fixed;background-size:100% 200%;animation:skyDrift 25s ease-in-out infinite alternate;color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+@keyframes skyDrift{from{background-position:0% 0%}to{background-position:0% 100%}}
+.wxfx{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+body[data-mood="rain"] .wxfx{background:repeating-linear-gradient(105deg,rgba(255,255,255,.14) 0 1px,transparent 1px 16px);background-size:120px 120px;animation:rainFall 1s linear infinite}
+@keyframes rainFall{from{background-position:0 -120px}to{background-position:0 0}}
+body[data-mood="cloudy"] .wxfx,body[data-mood="partly"] .wxfx{background:radial-gradient(220px 70px at 20% 18%,rgba(255,255,255,.35),transparent 70%),radial-gradient(280px 80px at 75% 10%,rgba(255,255,255,.28),transparent 70%);animation:cloudDrift 30s ease-in-out infinite alternate}
+@keyframes cloudDrift{from{background-position:0 0,0 0}to{background-position:120px 0,-100px 0}}
+body[data-mood="sunny"] .wxfx{background:repeating-conic-gradient(from 0deg at 84% 17%,rgba(255,248,214,.28) 0deg 8deg,transparent 8deg 24deg);transform-origin:84% 17%;animation:sunSpin 60s linear infinite}
+@keyframes sunSpin{to{transform:rotate(360deg)}}
+body[data-mood="night"] .wxfx{background:radial-gradient(1.5px 1.5px at 15% 12%,#fff,transparent),radial-gradient(1px 1px at 45% 22%,#fff,transparent),radial-gradient(1.5px 1.5px at 70% 8%,#fff,transparent),radial-gradient(1px 1px at 30% 32%,#fff,transparent);animation:twinkle 3s ease-in-out infinite alternate}
+@keyframes twinkle{from{opacity:.35}to{opacity:1}}
+body[data-mood="snow"] .wxfx{background:radial-gradient(3px 3px at 15% 10%,#fff,transparent),radial-gradient(2px 2px at 45% 20%,#fff,transparent),radial-gradient(3px 3px at 75% 8%,#fff,transparent),radial-gradient(2px 2px at 30% 30%,#fff,transparent);background-size:200px 200px;animation:snowFall 12s linear infinite}
+@keyframes snowFall{from{background-position:0 -200px}to{background-position:0 200px}}
+body[data-mood="storm"] .wxfx{background:radial-gradient(circle at 50% 0,rgba(255,255,255,.55),transparent 60%);opacity:0;animation:stormFlash 7s linear infinite}
+@keyframes stormFlash{0%,90%,93%,95%,100%{opacity:0}91%,94%{opacity:.9}}
+@media (prefers-reduced-motion:reduce){body{animation:none}.wxfx{animation:none!important}.skel{animation:none!important}#refreshBtn.spinning::before{animation:none!important}}
+body::before{content:"";position:fixed;inset:0;background:var(--fx);pointer-events:none}
+main{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:14px 16px 48px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+h1{font-size:18px;margin:0;font-weight:800;letter-spacing:-.01em}
+.bar{display:flex;gap:8px}
+button,a.btn{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 14px;min-height:44px;cursor:pointer;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+button:focus-visible,input:focus-visible,a.btn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+a.btn{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none}
+.loc{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 2px 6px;font-size:14px;color:var(--mut)}
+.loc button{min-height:44px;padding:10px 12px;font-size:14px;flex:none}
+#now{margin:6px 2px 18px}
+#now .temp{font-size:92px;font-weight:300;line-height:.95;letter-spacing:-.05em}
+#now .cond{font-size:22px;font-weight:600;margin-top:6px}
+#now .meta{color:var(--mut);margin-top:2px;font-size:15px}
+#now .meta span{margin-right:16px}
+#verdict{background:linear-gradient(135deg,rgba(255,255,255,.12),var(--idle));color:var(--on);border-radius:22px;padding:22px 20px;box-shadow:0 14px 32px rgba(0,0,0,.28)}
+#verdict.go{background:linear-gradient(135deg,#2AA876,var(--go))}#verdict.warn{background:linear-gradient(135deg,#9A6B00,var(--warn))}#verdict.stop{background:linear-gradient(135deg,#D64A3F,var(--stop))}
+.verdict-head{display:flex;align-items:center;gap:12px}
+.verdict-icon{flex:none;width:44px;height:44px;color:#fff}
+.verdict-icon svg{width:44px;height:44px;display:block}
+.chips{margin:0}
+.chip{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 10px;margin:0 6px 6px 0;font-size:14px}
+#verdict .word{font-size:clamp(36px,11vw,52px);line-height:1;font-weight:900;letter-spacing:-.02em;margin:0 0 10px}
+#verdict ul{margin:0;padding-left:20px}
+#verdict p{margin:0}
+#verdict button{background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.4)}
+#verdict .disclaimer{margin-top:14px;font-size:13px;opacity:.9}
+#verdict .recent{margin-top:14px;padding:12px 14px;border:1px solid rgba(255,255,255,.35);border-radius:14px;background:rgba(0,0,0,.18)}
+#verdict .recent h3{margin:0 0 6px;font-size:14px;letter-spacing:.06em;text-transform:uppercase}
+#verdict .recent p{margin:4px 0;font-size:15px}
+#verdict .recent .advice{font-weight:700}
+#verdict .care-toggle{font-size:13px;padding:6px 12px;border-radius:999px;margin-top:4px}
+#verdict .care-toggle small{font-size:12px;opacity:.9;margin-left:4px}
+.sub{color:var(--mut);font-size:14px;margin:10px 2px 0}
+.sub.stale{color:var(--stop);font-weight:700}
+h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
+.strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+.hr{flex:0 0 82px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 8px;text-align:center;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.hr b{display:block;font-size:13px;color:var(--mut);font-weight:600}
+.hr .t{font-size:26px;font-weight:700;margin:2px 0}
+.hr small{display:block;color:var(--mut);font-size:12px}
+.hr .rain{color:var(--ink);font-weight:700}
+.rainbar{height:6px;background:rgba(127,140,155,.35);border-radius:3px;overflow:hidden;margin-top:6px}
+.rainbar span{display:block;height:100%;background:#4A90D9;border-radius:3px}
+.skel{height:18px;border-radius:8px;margin:8px 0;background:linear-gradient(90deg,var(--tint),var(--card),var(--tint));background-size:200% 100%;animation:shimmer 1.5s linear infinite}
+.skel.short{width:60%}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+#refreshBtn.spinning{opacity:.7}
+#refreshBtn.spinning::before{content:"\21BB  ";display:inline-block;animation:spin 1s linear infinite}
+.timeline-wrap{position:relative;margin-top:14px}
+.timeline{display:flex;gap:1px;height:10px;border-radius:5px;overflow:hidden}
+.tl-seg{flex:1}
+.tl-seg.dry{background:var(--go)}
+.tl-seg.wet{background:rgba(192,50,42,.6)}
+.timeline-now{position:absolute;left:0;top:-3px;width:2px;height:16px;background:var(--ink)}
+.list{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.list h3{margin:0;padding:11px 16px;font-size:14px;color:var(--mut);background:var(--tint);border-bottom:1px solid var(--line)}
+.item{display:flex;align-items:center;gap:14px;padding:12px 16px;min-height:54px;border-bottom:1px solid var(--line);cursor:pointer}
+.item:last-child{border-bottom:0}
+.item input{width:24px;height:24px;accent-color:var(--go);flex:none}
+.item.done span{text-decoration:line-through;color:var(--mut)}
+.item em{display:block;font-style:normal;font-size:13px;color:var(--ink);font-weight:700}
+.msg{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.msg p{margin:0 0 12px}
+.row{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.srow{display:flex;gap:8px;margin-bottom:8px}
+.srow input{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--tint);border:1px solid var(--line);border-radius:12px;padding:10px 14px;min-height:44px}
+.srow input::placeholder{color:var(--mut)}
+#results{margin-bottom:8px}
+#results button{display:block;width:100%;text-align:left;margin-bottom:6px}
+#gpsBtn{width:100%}
+#search{margin-bottom:12px}
+@media(prefers-reduced-motion:no-preference){#verdict{transition:background .3s}}
+</style>
+</head>
+<body>
+<div class="wxfx" aria-hidden="true"></div>
+<main>
+  <header>
+    <h1>Ride check</h1>
+    <div class="bar">
+      <button id="unitBtn" aria-label="Switch units"></button>
+      <button id="refreshBtn">Refresh</button>
+    </div>
+  </header>
+
+  <div class="loc"><span id="place">Finding your location…</span><button id="changeBtn">Change</button></div>
+  <div class="msg" id="search" hidden>
+    <p>Search for a town or city, or use your phone’s location.</p>
+    <div class="srow"><input id="q" type="search" placeholder="Town or city" autocomplete="off" aria-label="Town or city"><button id="goBtn">Search</button></div>
+    <div id="results" aria-live="polite"></div>
+    <button id="gpsBtn">Use my location</button>
+  </div>
+
+  <div id="now" aria-live="polite"></div>
+
+  <section id="verdict" aria-live="polite">
+    <p class="word">Checking</p>
+    <p>Finding your location and the next few hours of weather.</p>
+  </section>
+  <p class="sub" id="updated"></p>
+
+  <h2>Next 6 hours</h2>
+  <div class="strip" id="strip"></div>
+
+  <h2>Best window</h2>
+  <div class="msg" id="bestWindow" aria-live="polite"><p>Loading the next 48 hours…</p></div>
+
+  <h2>Departure planner</h2>
+  <div class="msg" id="departBox" aria-live="polite"><p>Loading the next 48 hours…</p></div>
+  <div class="msg" id="departSliderBox" style="margin-top:12px">
+    <label for="departRange" style="font-size:14px;color:var(--mut)">Leave in <b id="departLabel">0 hours (now)</b></label>
+    <input type="range" id="departRange" min="0" max="47" value="0" style="width:100%" aria-label="Departure time in hours from now">
+    <div class="srow"><button id="departMinus" style="flex:1" aria-label="One hour earlier">− 1 hour</button><button id="departPlus" style="flex:1" aria-label="One hour later">+ 1 hour</button></div>
+    <div id="departResult" aria-live="polite"></div>
+  </div>
+
+  <h2>Saved places</h2>
+  <div class="msg" id="savedBox">
+    <div class="srow"><button id="savePlaceBtn" style="flex:1">Save this place</button></div>
+    <div id="savedList" style="margin-top:8px"></div>
+  </div>
+
+  <h2>Fuel and directions</h2>
+  <div class="srow"><input id="dest" type="search" placeholder="Destination" autocomplete="off" aria-label="Destination"></div>
+  <div class="srow"><a class="btn" id="wDir" target="_blank" rel="noopener" href="https://waze.com/ul?navigate=yes">Start directions in Waze</a></div>
+  <div class="srow"><button id="destWxBtn" style="flex:1">Check destination weather</button></div>
+  <div class="msg" id="destWeather" hidden aria-live="polite"></div>
+
+  <div class="srow"><button id="mapBtn" style="flex:1">Show live map</button></div>
+  <div id="mapWrap" hidden><iframe id="map" title="Waze live map" loading="lazy" referrerpolicy="no-referrer" style="width:100%;height:340px;border:1px solid var(--line);border-radius:12px;background:var(--card)"></iframe></div>
+
+  <h2>Ride timer</h2>
+  <div class="msg" id="timerBox">
+    <p style="font-size:36px;font-weight:800;margin:0 0 12px" id="elapsed">00:00:00</p>
+    <div class="srow"><button id="startRideBtn" style="flex:1">Start ride</button><button id="stopRideBtn" style="flex:1" disabled>Stop ride</button></div>
+    <p class="sub" id="timerNote" style="margin:10px 2px 0">Timer keeps running if you leave the page.</p>
+  </div>
+
+  <h2>Before you go</h2>
+  <div id="lists"></div>
+  <div class="row">
+    <span class="sub" id="count"></span>
+    <button id="resetBtn">Start new ride</button>
+  </div>
+</main>
+
+<script>
+(function(){
+  const $ = (s) => document.querySelector(s);
+  const mem = {};
+
+  /* ============================================================
+     DEMO MODE — clearly separated, kept on purpose.
+     How to use: open the page with #demo, #demo=rain, #demo=storm,
+     #demo=snow, #demo=fog, #demo=sunny or #demo=night at the end
+     of the URL. Demo data replaces the live Open-Meteo forecast
+     only, so the verdict, strip, best window, timer and checklists
+     can be tested without a real location. Nothing else in the
+     app depends on demo code, and demo mode never touches the
+     live forecast cache.
+     ============================================================ */
+  const DEMO = location.hash.indexOf('#demo') === 0;
+  const DEMO_V = location.hash.slice(6);
+  function demoHour(hour, t, pp, pr, g, c, wd){
+    return { label: (hour % 12 === 0 ? 12 : hour % 12) + (hour < 12 ? ' AM' : ' PM'), t, pp, pr, g, ws: Math.round(g * 0.7), vis: 10000, c, d: 1, wd };
+  }
+  function demoHours(){
+    const now = new Date().getHours();
+    const t = [11, 10, 9, 9, 8, 7], pp = [10, 15, 30, 45, 55, 40], g = [24, 28, 33, 41, 44, 38], c = [2, 3, 3, 61, 61, 3];
+    const out = [];
+    for (let i = 0; i < 6; i++) out.push(demoHour((now + i) % 24, t[i], pp[i], i >= 3 ? 0.4 : 0, g[i], c[i], 45 + i * 20));
+    const v = { rain: 61, storm: 95, snow: 73, fog: 45, sunny: 0, night: 0 }[DEMO_V];
+    if (v !== undefined) out[0].c = v;
+    if (DEMO_V === 'night') out[0].d = 0;
+    return out;
+  }
+  function demoAllHours(){
+    const now = new Date().getHours();
+    const pp = [10, 15, 30, 45, 55, 40, 20, 10, 5, 0, 0, 5, 10, 20, 35, 50, 40, 25, 15, 5, 0, 0, 10, 20];
+    const g = [24, 28, 33, 41, 44, 38, 30, 26, 22, 20, 18, 20, 24, 28, 32, 36, 34, 28, 24, 20, 18, 16, 18, 22];
+    const out = [];
+    for (let i = 0; i < 24; i++) out.push(demoHour((now + i) % 24, 11 - (i % 5), pp[i], pp[i] >= 45 ? 0.4 : 0, g[i], pp[i] >= 45 ? 61 : 2, 45 + i * 15));
+    return out;
+  }
+  const DEMO_SUN = { sunrise: '6:42 AM', sunset: '8:15 PM' };
+  /* ===================== END OF DEMO MODE ===================== */
+
+  function load(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return k in mem ? mem[k] : d; } }
+  function save(k, v){ mem[k] = v; try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+
+  let units = load('units', 'metric');
+  const state = { hours: null, allHours: null, past: null, sun: null, fetchedAt: null, stale: false, warnings: null };
+
+  // ---- unit helpers (data is always fetched in metric) ----
+  const T = (c) => units === 'metric' ? Math.round(c) : Math.round(c * 9 / 5 + 32);
+  const W = (k) => units === 'metric' ? Math.round(k) : Math.round(k * 0.621371);
+  const tu = () => units === 'metric' ? '°C' : '°F';
+  const wu = () => units === 'metric' ? 'km/h' : 'mph';
+  const rainText = (mm) => units === 'metric' ? `${mm.toFixed(1)} mm` : `${(mm / 25.4).toFixed(2)} in`;
+  const COMPASS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  const windDir = (deg) => COMPASS[Math.round(((deg % 360) + 360) % 360 / 22.5) % 16];
+  function fmtClock(iso){
+    if (!iso) return '';
+    const hm = iso.slice(11, 16);
+    let h = parseInt(hm.slice(0, 2), 10);
+    const m = hm.slice(3, 5);
+    const ap = h < 12 ? 'AM' : 'PM';
+    h = h % 12 === 0 ? 12 : h % 12;
+    return `${h}:${m} ${ap}`;
+  }
+
+  function wxText(c){
+    if (c === 0) return 'Clear';
+    if (c <= 2) return 'Partly cloudy';
+    if (c === 3) return 'Overcast';
+    if (c <= 48) return 'Fog';
+    if (c <= 57) return 'Drizzle';
+    if (c <= 67) return 'Rain';
+    if (c <= 77) return 'Snow';
+    if (c <= 82) return 'Showers';
+    if (c <= 86) return 'Snow showers';
+    return 'Storm';
+  }
+
+  // ---- verdict logic — thresholds unchanged from the original ----
+  function verdict(h){
+    let lvl = 0;
+    const why = [];
+    const up = (l, m) => { lvl = Math.max(lvl, l); why.push(m); };
+    const mx = (f) => Math.max.apply(null, h.map(f));
+    const mn = (f) => Math.min.apply(null, h.map(f));
+    const pp = mx((x) => x.pp), pr = mx((x) => x.pr);
+    const g = mx((x) => x.g), tmin = mn((x) => x.t), tmax = mx((x) => x.t);
+    if (h.some((x) => x.c >= 95)) up(2, 'Thunderstorm in the forecast');
+    if (pr >= 1 || pp >= 60) up(2, `Rain likely (${pp}% chance)`);
+    else if (pp >= 30 || pr >= 0.2) up(1, `Chance of rain (${pp}%)`);
+    if (tmin <= 2) up(2, `Ice risk on the road (${T(tmin)}${tu()})`);
+    else if (tmin <= 8) up(1, `Cold: ${T(tmin)}${tu()}, wear thermal layers`);
+    if (tmax >= 35) up(1, `Hot: ${T(tmax)}${tu()}, carry water and vent your gear`);
+    if (g >= 60) up(2, `Gusts up to ${W(g)} ${wu()}`);
+    else if (g >= 40) up(1, `Crosswinds: gusts up to ${W(g)} ${wu()}`);
+    if (h.some((x) => x.c === 45 || x.c === 48)) up(1, 'Fog: low visibility');
+    return { lvl, why };
+  }
+
+  function moodOf(x){
+    const c = x.c, day = x.d !== 0;
+    if (c >= 95) return 'storm';
+    if ((c >= 51 && c <= 67) || (c >= 80 && c <= 82)) return 'rain';
+    if ((c >= 71 && c <= 77) || c === 85 || c === 86) return 'snow';
+    if (c === 45 || c === 48) return 'fog';
+    if (!day) return c <= 2 ? 'night' : 'nightcloud';
+    if (c <= 1) return 'sunny';
+    return c === 2 ? 'partly' : 'cloudy';
+  }
+  function timeLabel(date){
+    return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+  function updateAgeLabel(){
+    const el = $('#updated');
+    if (!state.fetchedAt) return;
+    if (DEMO){ el.textContent = 'Demo data, not a real forecast.'; el.classList.remove('stale'); return; }
+    const ageMin = Math.round((Date.now() - state.fetchedAt.getTime()) / 60000);
+    const stale = state.stale || ageMin > 60;
+    el.textContent = stale
+      ? `Stale forecast from ${timeLabel(state.fetchedAt)} — tap Refresh for a new forecast.`
+      : `Forecast from ${timeLabel(state.fetchedAt)} — tap Refresh for a new forecast.`;
+    el.classList.toggle('stale', stale);
+  }
+  function renderNow(){
+    const x = state.hours[0];
+    document.body.setAttribute('data-mood', moodOf(x));
+    let meta = `<span>Rain ${x.pp}%</span><span>Gusts ${W(x.g)} ${wu()}</span>`;
+    if (x.wd !== undefined && x.wd !== null) meta += `<span>Wind ${windDir(x.wd)}</span>`;
+    if (state.sun && state.sun.sunrise) meta += `<span>Sunrise ${state.sun.sunrise}</span>`;
+    if (state.sun && state.sun.sunset) meta += `<span>Sunset ${state.sun.sunset}</span>`;
+    $('#now').innerHTML = `<div class="temp">${T(x.t)}°</div><div class="cond">${wxText(x.c)}</div><div class="meta">${meta}</div>`;
+  }
+  function verdictIcon(mood){
+    const open = '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+    const cloud = '<path d="M14 32a8 8 0 0 1-1-15.9A11 11 0 0 1 34 18a7 7 0 0 1 0 14H14Z"/>';
+    if (mood === 'sunny') return open + '<circle cx="24" cy="24" r="10"/><path d="M24 4v5M24 39v5M4 24h5M39 24h5M10 10l3.5 3.5M34.5 34.5 38 38M38 10l-3.5 3.5M13.5 34.5 10 38"/></svg>';
+    if (mood === 'partly') return open + '<circle cx="18" cy="16" r="7"/><path d="M18 5v3M18 24v3M7 16h3M26 16h3"/>' + '<path d="M16 36a7 7 0 0 1-1-13.9A10 10 0 0 1 34 24a6 6 0 0 1 0 12H16Z"/></svg>';
+    if (mood === 'rain') return open + cloud + '<path d="M17 36l-2 5M25 36l-2 5M33 36l-2 5"/></svg>';
+    if (mood === 'storm') return open + cloud + '<path d="M25 30l-5 9h6l-3 7 8-11h-6l2-5Z" fill="currentColor" stroke="none"/></svg>';
+    if (mood === 'snow') return open + cloud + '<circle cx="18" cy="38" r="1.6" fill="currentColor" stroke="none"/><circle cx="26" cy="40" r="1.6" fill="currentColor" stroke="none"/><circle cx="34" cy="38" r="1.6" fill="currentColor" stroke="none"/></svg>';
+    if (mood === 'fog') return open + cloud + '<path d="M14 38h20M18 43h14"/></svg>';
+    if (mood === 'night') return open + '<path d="M32 6a18 18 0 1 0 10 32A20 20 0 0 1 32 6Z"/></svg>';
+    if (mood === 'nightcloud') return open + '<path d="M30 5a16 16 0 1 0 9 29A18 18 0 0 1 30 5Z"/>' + '<path d="M18 36a6 6 0 0 1-1-11.9A9 9 0 0 1 35 26a5.5 5.5 0 0 1 0 11H18Z"/></svg>';
+    return open + cloud + '</svg>';
+  }
+  // Official warnings: National Weather Service active alerts for the
+  // checked place, filtered to Coastal Flood Warning and Gale Warning
+  // only. Point alerts cover the place itself; Gale Warnings are issued
+  // for coastal waters, so for a Florida place we also check statewide
+  // active Gale Warnings and keep only those naming South Florida
+  // waters, labelled as nearby waters, not the road itself.
+  function fmtWarnTime(s){
+    if (!s) return '';
+    try { return new Date(s).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch(e){ return s; }
+  }
+  function fetchWarnings(lat, lon){
+    if (DEMO) return Promise.resolve([]);
+    const pointUrl = 'https://api.weather.gov/alerts/active?point=' + lat + ',' + lon;
+    const areaUrl = 'https://api.weather.gov/alerts/active?area=FL';
+    const toList = (d) => (d && d.features) ? d.features.map((f) => f.properties).filter(Boolean) : [];
+    const isWanted = (p) => p.event === 'Coastal Flood Warning' || p.event === 'Gale Warning';
+    const southFL = (p) => /(Miami|Broward|Palm Beach|Monroe|Jupiter|Deerfield|South Florida|Biscayne Bay|Florida Bay|Florida Keys|Key Largo|Key West|Atlantic|Gulf)/i.test((p.areaDesc || '') + ' ' + (p.description || ''));
+    return Promise.all([
+      timedFetch(pointUrl).then((r) => r.ok ? r.json() : null).then(toList).catch(() => []),
+      timedFetch(areaUrl).then((r) => r.ok ? r.json() : null).then(toList).catch(() => [])
+    ]).then(([pointAlerts, areaAlerts]) => {
+      const seen = {};
+      const out = [];
+      pointAlerts.filter(isWanted).forEach((p) => { if (!seen[p.id]){ seen[p.id] = 1; out.push({ event: p.event, start: p.onset || p.effective, end: p.ends || p.expires, scope: 'this place' }); } });
+      areaAlerts.filter((p) => p.event === 'Gale Warning' && southFL(p)).forEach((p) => { if (!seen[p.id]){ seen[p.id] = 1; out.push({ event: p.event, start: p.onset || p.effective, end: p.ends || p.expires, scope: 'nearby coastal waters' }); } });
+      return out;
+    }).catch(() => null);
+  }
+  function renderVerdict(){
+    const v = $('#verdict');
+    if (!state.hours) return;
+    renderNow();
+    const r = verdict(state.hours.slice(0, 6));
+    // Warnings in the verdict: a flood or gale warning must not read as
+    // a rain-only decision. It bumps the verdict to at least Ride with
+    // care; the final ride decision still stays with the rider.
+    let warningsHtml = '';
+    if (state.warnings === null){
+      warningsHtml = `<div class="recent"><h3>Official warnings</h3><p>Checking National Weather Service warnings for this place…</p></div>`;
+    } else if (!state.warnings.length){
+      warningsHtml = `<div class="recent"><h3>Official warnings</h3><p>No Coastal Flood or Gale warnings active for this place right now.</p></div>`;
+    } else {
+      state.warnings.forEach((w) => {
+        r.why.push(w.event + ' active');
+        if (r.lvl < 1) r.lvl = 1;
+      });
+      warningsHtml = `<div class="recent"><h3>Official warnings</h3>` +
+        state.warnings.map((w) => `<p><b>${w.event}</b> (${w.scope}): ${fmtWarnTime(w.start)} to ${fmtWarnTime(w.end)}.</p>`).join('') +
+        `<p class="advice">Advice: ${state.warnings.some((w) => w.event.indexOf('Flood') >= 0) ? 'Do not ride through flooded roads, even shallow-looking water can hide a washed-out surface. ' : ''}${state.warnings.some((w) => w.event === 'Gale Warning') ? 'Expect strong, gusty wind on bridges and open coastal roads.' : ''}</p></div>`;
+    }
+    // Recent weather: rain that has stopped can still leave wet roads.
+    // Show it as its own panel, with amount, timing, and gusts, instead
+    // of burying it as one more chip in the next-6-hours list.
+    const past = DEMO ? [] : (state.past || []);
+    const isWet = (x) => x.pr > 0 || (x.c >= 51 && x.c <= 67) || (x.c >= 80 && x.c <= 82) || x.c >= 95;
+    const pastRain = past.filter(isWet);
+    const nowWet = isWet(state.hours[0]);
+    const recentTotal = past.reduce((s, x) => s + (x.pr || 0), 0);
+    const recentGust = past.length ? Math.max.apply(null, past.map((x) => x.g || 0)) : 0;
+    let recentHtml = '';
+    if (!past.length){
+      recentHtml = `<div class="recent"><h3>Recent weather</h3><p>No recent weather data for the last 3 hours.</p></div>`;
+    } else if (pastRain.length && !nowWet){
+      const lastIdx = past.map(isWet).lastIndexOf(true);
+      const hoursAgo = past.length - 1 - lastIdx;
+      const stopped = hoursAgo === 0 ? 'within the last hour' : `${hoursAgo + 1} hours ago`;
+      r.why.push(`Recent rain has stopped, but roads may still be wet.`);
+      if (r.lvl < 1) r.lvl = 1;
+      recentHtml = `<div class="recent"><h3>Recent weather: last 3 hours</h3>` +
+        `<p>Rain in ${pastRain.length} of the last 3 hours, ${rainText(recentTotal)} total. Last rain ${past[lastIdx].label || ''}, stopped ${stopped}.</p>` +
+        `<p>Recent gusts up to ${W(recentGust)} ${wu()}.</p>` +
+        `<p class="advice">Advice: take it easy on painted lines, shaded spots, and your first corners. Roads can stay slick after the rain stops.</p></div>`;
+    } else if (nowWet){
+      recentHtml = `<div class="recent"><h3>Recent weather: last 3 hours</h3>` +
+        `<p>Rain in ${pastRain.length} of the last 3 hours, ${rainText(recentTotal)} total, and it is still wet now. Recent gusts up to ${W(recentGust)} ${wu()}.</p>` +
+        `<p class="advice">Advice: wet roads right now, not just wet earlier. Slow down and leave extra stopping distance.</p></div>`;
+    } else {
+      recentHtml = `<div class="recent"><h3>Recent weather: last 3 hours</h3>` +
+        `<p>No rain in the last 3 hours. Recent gusts up to ${W(recentGust)} ${wu()}.</p>` +
+        `<p class="advice">Advice: no wet-road hangover from earlier rain.</p></div>`;
+    }
+    // Feels-like at riding speed, fixed: the old code only applied wind chill at 10C or below, so in warm weather it just repeated the standing temperature.
+    // Now: at or below 10C, use the standard wind-chill formula with apparent wind (60 km/h cruising + actual wind). Above 10C, use a capped wind-cooling estimate
+    // (about 0.12C per km/h of apparent wind, capped at 10C cooler), because moving air still strips heat even when wind chill does not formally apply.
+    // This is an estimate for a rider in gear, not a forecast value, and it is labelled as such in the panel.
+    const cur = state.hours[0];
+    let feelsHtml = '';
+    if (cur){
+      const tC = cur.t;
+      const windKmh = (cur.ws !== null && cur.ws !== undefined) ? cur.ws : (cur.g ? cur.g * 0.7 : 0);
+      const apparentKmh = 60 + windKmh;
+      let feelsC;
+      if (tC <= 10) feelsC = 13.12 + 0.6215 * tC - 11.37 * Math.pow(apparentKmh, 0.16) + 0.3965 * tC * Math.pow(apparentKmh, 0.16);
+      else feelsC = tC - Math.min(10, apparentKmh * 0.12);
+      const feels = units === 'metric' ? Math.round(feelsC) : Math.round(feelsC * 9 / 5 + 32);
+      const diffC = Math.round(tC - feelsC);
+      const diff = units === 'metric' ? diffC : Math.round(diffC * 9 / 5);
+      const diffTxt = diffC > 0 ? ` (${diff}${tu()} cooler than standing still)` : '';
+      let gear = '';
+      if (feelsC < 0) gear = 'Gear hint: heavy thermal layers and a windproof outer, plus winter gloves.';
+      else if (feelsC < 10) gear = 'Gear hint: thermal layer under a windproof jacket, and warm gloves.';
+      else if (feelsC < 20) gear = 'Gear hint: a windproof layer is worth carrying, even if it feels mild standing still.';
+      else if (feelsC >= 35) gear = 'Gear hint: vent your gear and carry water, heat builds fast at speed too.';
+      else gear = 'Gear hint: standard gear, with a windproof layer if you stop for long.';
+      const gustTxt = cur.g >= 40 ? ' Strong gusts: expect crosswind pushes on open roads and bridges.' : '';
+      feelsHtml = `<div class="recent"><h3>At riding speed</h3><p>Estimated feels-like ${feels}${tu()} at 60 km/h (37 mph), vs ${T(tC)}${tu()} standing still${diffTxt}.${gustTxt}</p><p class="advice">${gear}</p></div>`;
+    }
+    const cls = ['go', 'warn', 'stop'][r.lvl];
+    const word = ['Good to ride', 'Ride with care', 'Hold off'][r.lvl];
+    v.className = cls;
+    const icon = verdictIcon(moodOf(state.hours[0]));
+    let html = `<div class="verdict-head"><span class="verdict-icon">${icon}</span><p class="word">${word}</p></div>`;
+    let detailsHtml = warningsHtml + recentHtml + feelsHtml;
+    detailsHtml += '<p style="margin:14px 0 0"><a href="#timerBox" style="color:#fff">Jump to ride timer</a> · <a href="#lists" style="color:#fff">Jump to checklists</a></p>';
+    if (r.why.length) detailsHtml += `<h3 style="margin:14px 0 6px;font-size:14px;letter-spacing:.06em;text-transform:uppercase">Next 6 hours</h3><div class="chips">${r.why.map((m) => `<span class="chip">${m}</span>`).join('')}</div>`;
+    else detailsHtml += '<p>No rain, wind, or temperature problems in the next 6 hours.</p>';
+    detailsHtml += '<p class="disclaimer">This is a weather guide, not a road check. Check the road yourself before you ride.</p>';
+    // Ride with care only: keep the verdict word always visible, and make
+    // the detail panels below it collapsible. Details start open, so a
+    // warning is never hidden by default; the button collapses them.
+    if (r.lvl === 1){
+      html += `<button id="careToggle" class="care-toggle" aria-expanded="true" aria-controls="careDetails"><span id="careToggleIcon">▾</span><small id="careToggleLabel">collapse</small></button>`;
+      html += `<div id="careDetails">${detailsHtml}</div>`;
+    } else {
+      html += detailsHtml;
+    }
+    v.innerHTML = html;
+    const careToggle = document.getElementById('careToggle');
+    if (careToggle){
+      careToggle.onclick = () => {
+        const d = document.getElementById('careDetails');
+        const open = d.hidden;
+        d.hidden = !open;
+        careToggle.setAttribute('aria-expanded', String(open));
+        document.getElementById('careToggleIcon').textContent = open ? '▾' : '▸';
+        document.getElementById('careToggleLabel').textContent = open ? 'collapse' : 'expand';
+      };
+    }
+    state.lvl = r.lvl;
+    updateAgeLabel();
+    renderBestWindow();
+    renderDeparture();
+    renderSaved();
+  }
+
+  // Best window: longest consecutive run in the next 24 hours with
+  // rain chance under 30%, no thunderstorm code, and gusts under 40 km/h.
+  function bestWindow(hours){
+    let best = null, cur = null;
+    hours.forEach((x) => {
+      const dry = x.pp < 30 && x.c < 95 && x.g < 40;
+      if (dry){
+        if (!cur) cur = { start: x, end: x, n: 1 };
+        else { cur.end = x; cur.n += 1; }
+        if (!best || cur.n > best.n) best = { ...cur };
+      } else cur = null;
+    });
+    return best;
+  }
+  function renderBestWindow(){
+    const box = $('#bestWindow');
+    if (!state.allHours || !state.allHours.length){ box.innerHTML = '<p>No 24-hour forecast yet.</p>'; return; }
+    const b = bestWindow(state.allHours);
+    if (!b || b.n < 1) box.innerHTML = '<p>No window meeting that dry rule in the next 48 hours: every hour has rain chance 30% or more, a thunderstorm, or gusts 40 km/h or more. That does not mean it rains every hour.</p>';
+    else if (b.n === 1) box.innerHTML = `<p>Best window: <b>${b.start.label}</b> (1 hour) — rain chance under 30%, no thunderstorm, gusts under 40 km/h.</p>`;
+    else box.innerHTML = `<p>Best window: <b>${b.start.label} – ${b.end.label}</b> (${b.n} hours) — rain chance under 30%, no thunderstorm, gusts under 40 km/h.</p>`;
+    box.innerHTML += bestWindowTimeline();
+  }
+
+  function bestWindowTimeline(){
+    if (!state.allHours || !state.allHours.length) return '';
+    const segs = state.allHours.map((x) => {
+      const dry = x.pp < 30 && x.c < 95 && x.g < 40;
+      return `<span class="tl-seg ${dry ? 'dry' : 'wet'}" title="${x.label}"></span>`;
+    }).join('');
+    return `<div class="timeline-wrap"><div class="timeline" aria-hidden="true">${segs}</div><div class="timeline-now" aria-hidden="true"></div></div><p class="sub" style="margin:6px 0 0">Bar: green = dry hour, red = wet, stormy, or gusty hour. Marker at left = now.</p>`;
+  }
+  function renderStrip(){
+    const s = $('#strip');
+    if (!state.hours){ s.innerHTML = ''; return; }
+    s.innerHTML = state.hours.slice(0, 6).map((x) =>
+      `<div class="hr"><b>${x.label}</b><div class="t">${T(x.t)}°</div>` +
+      `<small>${wxText(x.c)}</small>` +
+      `<small class="rain">${x.pp}% rain · ${rainText(x.pr)}</small>` +
+      `<div class="rainbar" aria-hidden="true"><span style="width:${x.pp}%"></span></div>` +
+      `<small>gusts ${W(x.g)}</small>` + (x.vis !== null && x.vis !== undefined ? `<small>visibility ${units === 'metric' ? (x.vis >= 1000 ? (x.vis / 1000).toFixed(1) + ' km' : x.vis + ' m') : (x.vis >= 1609 ? (x.vis / 1609.34).toFixed(1) + ' mi' : Math.round(x.vis * 3.281) + ' ft')}</small>` : '') + `</div>`
+    ).join('');
+  }
+
+  function showMessage(title, text, btnLabel, fn){
+    const v = $('#verdict');
+    v.className = '';
+    v.innerHTML = `<p class="word">${title}</p><p>${text}</p>` + (title === 'Checking' ? '<div class="skel" aria-hidden="true"></div><div class="skel short" aria-hidden="true"></div>' : '');
+    $('#updated').textContent = '';
+    $('#now').innerHTML = '';
+    $('#strip').innerHTML = '';
+    $('#bestWindow').innerHTML = '<p>No forecast yet.</p>';
+    if (btnLabel){
+      const b = document.createElement('button');
+      b.textContent = btnLabel;
+      b.style.marginTop = '14px';
+      b.onclick = fn;
+      v.appendChild(b);
+    }
+  }
+
+  // ---- weather ----
+  function hourLabel(hr){
+    return (hr % 12 === 0 ? 12 : hr % 12) + (hr < 12 ? ' AM' : ' PM');
+  }
+  function parseForecast(d){
+    const hh = d.hourly;
+    const nowLocal = new Date(Date.now() + d.utc_offset_seconds * 1000).toISOString().slice(0, 13);
+    let i = hh.time.findIndex((t) => t.slice(0, 13) === nowLocal);
+    if (i < 0) i = 0;
+    const past = [];
+    for (let p = Math.max(0, i - 3); p < i; p++){
+      past.push({ pr: hh.precipitation[p] || 0, pp: hh.precipitation_probability[p] || 0, c: hh.weather_code[p], g: hh.wind_gusts_10m[p] || 0, label: hourLabel(parseInt(hh.time[p].slice(11, 13), 10)) });
+    }
+    const build = (k) => {
+      const hr = parseInt(hh.time[k].slice(11, 13), 10);
+      return {
+        label: hourLabel(hr),
+        t: hh.temperature_2m[k],
+        pp: hh.precipitation_probability[k] || 0,
+        pr: hh.precipitation[k] || 0,
+        g: hh.wind_gusts_10m[k] || 0,
+        ws: hh.wind_speed_10m ? hh.wind_speed_10m[k] : null,
+        vis: hh.visibility ? hh.visibility[k] : null,
+        c: hh.weather_code[k],
+        d: hh.is_day ? hh.is_day[k] : 1,
+        wd: hh.wind_direction_10m ? hh.wind_direction_10m[k] : null
+      };
+    };
+    const hours = [];
+    for (let k = i; k < Math.min(i + 6, hh.time.length); k++) hours.push(build(k));
+    const allHours = [];
+    for (let k = i; k < Math.min(i + 48, hh.time.length); k++) allHours.push(build(k));
+    let sun = null;
+    if (d.daily && d.daily.time){
+      const today = nowLocal.slice(0, 10);
+      let di = d.daily.time.indexOf(today);
+      if (di < 0) di = 0;
+      sun = { sunrise: fmtClock(d.daily.sunrise[di]), sunset: fmtClock(d.daily.sunset[di]) };
+    }
+    return { hours, allHours, past, sun };
+  }
+  // Timed fetch: a hung forecast/warnings request must not leave
+  // Refresh spinning forever. Aborts after 15 seconds.
+  function timedFetch(url){
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), 15000);
+    return fetch(url, { signal: c.signal }).finally(() => clearTimeout(t));
+  }
+  function fetchForecast(lat, lon){
+    if (DEMO) return Promise.resolve({ hours: demoHours(), allHours: demoAllHours(), past: [], sun: DEMO_SUN });
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon +
+      '&hourly=temperature_2m,precipitation_probability,precipitation,wind_gusts_10m,wind_speed_10m,wind_direction_10m,weather_code,is_day,visibility' +
+      '&daily=sunrise,sunset&forecast_days=2&past_days=1&timezone=auto';
+    return timedFetch(url).then((r) => {
+      if (!r.ok) throw new Error('bad response');
+      return r.json();
+    }).then(parseForecast);
+  }
+  function saveCache(){
+    if (DEMO || !state.hours) return;
+    save('cachedForecast', { hours: state.hours, allHours: state.allHours, past: state.past, sun: state.sun, fetchedAt: state.fetchedAt ? state.fetchedAt.getTime() : null, loc: loc ? { lat: loc.lat, lon: loc.lon, name: loc.name } : null });
+  }
+  function loadCache(){
+    const c = load('cachedForecast', null);
+    if (!c || !c.hours) return null;
+    return c;
+  }
+
+  // ---- location ----
+  let locSeq = 0, wxSeq = 0;
+  let loc = load('loc', null); // { lat, lon, name, mode: 'gps' | 'manual', acc }
+
+  function placeText(l, note){
+    let t = l.mode === 'gps' ? 'Near ' + (l.name || 'your location') : (l.name || 'Chosen location');
+    if (l.mode === 'gps' && l.acc > 2000) t += ' (approximate)';
+    return note ? t + ' ' + note : t;
+  }
+  function setPlace(t){ $('#place').textContent = t; }
+  function openSearch(open){ $('#search').hidden = !open; if (open) $('#q').focus(); }
+
+  function reverseName(lat, lon){
+    return timedFetch('https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + lat + '&longitude=' + lon + '&localityLanguage=en')
+      .then((r) => r.json())
+      .then((d) => {
+        const n = d.city || d.locality || '';
+        const reg = d.principalSubdivision || '';
+        return n ? n + (reg && reg !== n ? ', ' + reg : '') : reg;
+      });
+  }
+
+  function useLocation(l, note){
+    loc = l; save('loc', l); wazeLinks();
+    setPlace(placeText(l, note));
+    showMessage('Checking', 'Loading the next few hours of weather.');
+    const mine = ++wxSeq;
+    state.warnings = null;
+    fetchWarnings(l.lat, l.lon).then((w) => { if (mine !== wxSeq) return; state.warnings = w; if (state.hours) renderVerdict(); });
+    $('#refreshBtn').classList.add('spinning');
+    fetchForecast(l.lat, l.lon).then((f) => {
+      if (mine !== wxSeq) return;
+      $('#refreshBtn').classList.remove('spinning');
+      state.hours = f.hours; state.allHours = f.allHours; state.past = f.past; state.sun = f.sun;
+      state.fetchedAt = new Date(); state.stale = false;
+      saveCache();
+      renderVerdict(); renderStrip(); renderLists();
+    }).catch(() => {
+      if (mine !== wxSeq) return;
+      $('#refreshBtn').classList.remove('spinning');
+      const c = loadCache();
+      // Only reuse a cached forecast for the same town: a stale forecast
+      // from a previous location must never be shown under a new place name.
+      if (c && c.loc && Math.abs(c.loc.lat - l.lat) < 0.05 && Math.abs(c.loc.lon - l.lon) < 0.05){
+        state.hours = c.hours; state.allHours = c.allHours; state.past = c.past; state.sun = c.sun;
+        state.fetchedAt = c.fetchedAt ? new Date(c.fetchedAt) : new Date(); state.stale = true;
+        renderVerdict(); renderStrip(); renderLists();
+        return;
+      }
+      showMessage('No forecast', 'The forecast didn’t load. Check your connection and try again.', 'Try again', start);
+    });
+    if (l.mode === 'gps' && !l.name){
+      reverseName(l.lat, l.lon).then((n) => {
+        if (n && loc && loc.lat === l.lat && loc.lon === l.lon){
+          loc.name = n; save('loc', loc); setPlace(placeText(loc, note));
+        }
+      }).catch(() => {});
+    }
+  }
+
+  function fallback(why){
+    if (loc){
+      useLocation(loc, '(last saved location)');
+      openSearch(true);
+    } else {
+      setPlace('No location yet');
+      showMessage('Location is off', why + ' Search for your town to get a forecast.', null);
+      openSearch(true);
+    }
+  }
+
+  function locate(){
+    setPlace('Finding your location…');
+    showMessage('Checking', 'Finding your location.');
+    if (!window.isSecureContext || !navigator.geolocation){
+      fallback('This page needs a secure (https) link to use your location.');
+      return;
+    }
+    let tries = 0;
+    const my = ++locSeq;
+    function ok(p){
+      if (my !== locSeq) return;
+      useLocation({ lat: +p.coords.latitude.toFixed(3), lon: +p.coords.longitude.toFixed(3), mode: 'gps', acc: Math.round(p.coords.accuracy) });
+    }
+    function bad(err){
+      if (my !== locSeq) return;
+      if (tries++ === 0 && err.code !== 1){
+        navigator.geolocation.getCurrentPosition(ok, bad, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+        return;
+      }
+      const why = err.code === 1 ? 'Location is blocked for this page. Allow it in your browser’s site settings.'
+        : err.code === 2 ? 'Your phone couldn’t work out where you are.'
+        : 'Finding your location took too long.';
+      fallback(why);
+    }
+    navigator.geolocation.getCurrentPosition(ok, bad, { enableHighAccuracy: false, timeout: 8000, maximumAge: 600000 });
+  }
+
+  function geocodeTown(raw){
+    const parts = raw.split(',').map((x) => x.trim().toLowerCase()).filter(Boolean);
+    const name = parts[0], rest = parts.slice(1);
+    return timedFetch('https://geocoding-api.open-meteo.com/v1/search?count=10&language=en&name=' + encodeURIComponent(name))
+      .then((r) => { if (!r.ok) throw new Error('bad'); return r.json(); })
+      .then((d) => {
+        let rs = d.results || [];
+        if (rest.length){
+          const f = rs.filter((r) => {
+            const hay = ((r.admin1 || '') + ' ' + (r.admin2 || '') + ' ' + (r.country || '') + ' ' + (r.country_code || '')).toLowerCase();
+            return rest.every((w) => hay.indexOf(w) >= 0);
+          });
+          if (f.length) rs = f;
+        }
+        return rs.slice(0, 5);
+      });
+  }
+
+  function search(){
+    const raw = $('#q').value.trim();
+    const res = $('#results');
+    if (!raw){ res.textContent = 'Type a town or city first.'; $('#q').focus(); return; }
+    res.textContent = 'Searching…';
+    geocodeTown(raw).then((rs) => {
+      if (!rs.length){ res.textContent = `No match for “${raw}”. Try just the town name.`; return; }
+      res.innerHTML = '';
+      rs.forEach((r) => {
+        const nm = r.name + (r.admin1 ? ', ' + r.admin1 : '') + (r.country ? ', ' + r.country : '');
+        const b = document.createElement('button');
+        b.textContent = nm;
+        b.onclick = () => {
+          locSeq++;
+          openSearch(false); res.innerHTML = '';
+          useLocation({ lat: +r.latitude.toFixed(3), lon: +r.longitude.toFixed(3), name: nm, mode: 'manual' });
+        };
+        res.appendChild(b);
+      });
+    }).catch(() => { res.textContent = 'Search didn’t load. Check your connection and try again.'; });
+  }
+
+  function start(){
+    if (DEMO){ useLocation({ lat: 0, lon: 0, name: 'Demo town', mode: 'manual' }); return; }
+    if (loc && loc.mode === 'manual') useLocation(loc);
+    else locate();
+  }
+
+  $('#changeBtn').onclick = () => { openSearch($('#search').hidden); };
+  $('#goBtn').onclick = search;
+  $('#q').addEventListener('keydown', (e) => { if (e.key === 'Enter') search(); });
+  $('#gpsBtn').onclick = () => { loc = null; save('loc', null); openSearch(false); locate(); };
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && state.fetchedAt && Date.now() - state.fetchedAt.getTime() > 20 * 60000) start();
+  });
+  setInterval(() => { if (state.fetchedAt) updateAgeLabel(); }, 60000);
+  // Foreground auto-refresh: refetch about every 30 minutes while the
+  // page is visible, so a verdict left open does not go stale.
+  setInterval(() => { if (!document.hidden && state.fetchedAt && Date.now() - state.fetchedAt.getTime() > 30 * 60000) start(); }, 30 * 60000);
+  // ---- checklist — logic unchanged from the original ----
+  const GROUPS = [
+    { name: 'Motorcycle', items: ['Tire pressure and tread', 'Oil level', 'Chain, brakes, and fluids', 'Lights and signals', 'Fuel'] },
+    { name: 'Riding gear', items: ['Helmet and visor', 'Gloves', 'Jacket and pants', 'Boots', 'Rain gear'] }
+  ];
+  const total = GROUPS.reduce((n, g) => n + g.items.length, 0);
+
+  function today(){ return new Date().toDateString(); }
+  function getChecks(){
+    let c = load('checks', null);
+    if (!c || c.day !== today()) c = { day: today(), done: {} };
+    return c;
+  }
+
+  function renderLists(){
+    const c = getChecks();
+    const wet = state.hours && state.lvl >= 1 && state.hours.slice(0, 6).some((x) => x.pp >= 30);
+    let html = '';
+    GROUPS.forEach((g) => {
+      html += `<div class="list" style="margin-bottom:12px"><h3>${g.name}</h3>`;
+      g.items.forEach((it) => {
+        const on = !!c.done[it];
+        const note = (it === 'Rain gear' && wet) ? '<em>Rain is in the forecast</em>' : '';
+        html += `<label class="item${on ? ' done' : ''}"><input type="checkbox" data-k="${it}"${on ? ' checked' : ''}><span>${it}${note}</span></label>`;
+      });
+      html += '</div>';
+    });
+    $('#lists').innerHTML = html;
+    const n = Object.keys(c.done).filter((k) => c.done[k]).length;
+    $('#count').textContent = `${n} of ${total} checked`;
+  }
+
+  $('#lists').addEventListener('change', (e) => {
+    const k = e.target.getAttribute('data-k');
+    if (!k) return;
+    const c = getChecks();
+    c.done[k] = e.target.checked;
+    save('checks', c);
+    renderLists();
+  });
+
+  $('#resetBtn').onclick = () => {
+    save('checks', { day: today(), done: {} });
+    renderLists();
+    // Start new ride also resets the ride timer to 0.
+    if (timerId) clearInterval(timerId);
+    timerId = null;
+    save('rideStart', null);
+    save('rideRunning', false);
+    $('#elapsed').textContent = '00:00:00';
+    setTimerButtons(false);
+    $('#timerNote').textContent = 'Timer keeps running if you leave the page.';
+  };
+  $('#refreshBtn').onclick = start;
+  $('#unitBtn').onclick = () => {
+    units = units === 'metric' ? 'imperial' : 'metric';
+    save('units', units);
+    setUnitLabel(); renderVerdict(); renderStrip();
+  };
+  function setUnitLabel(){ $('#unitBtn').textContent = units === 'metric' ? '°C · km/h' : '°F · mph'; }
+
+  // ---- Waze links — destination weather is separate and does not change these ----
+  let mapOn = false;
+  function mapSrc(){ return `https://embed.waze.com/iframe?zoom=13&lat=${loc.lat}&lon=${loc.lon}&pin=1`; }
+  function wazeLinks(){
+    if (mapOn && loc && !DEMO) $('#map').src = mapSrc();
+    $('#wDir').href = 'https://waze.com/ul?navigate=yes&q=' + encodeURIComponent($('#dest').value.trim());
+  }
+  $('#mapBtn').onclick = () => {
+    if (!loc) return;
+    mapOn = !mapOn;
+    $('#mapWrap').hidden = !mapOn;
+    $('#mapBtn').textContent = mapOn ? 'Hide live map' : 'Show live map';
+    if (mapOn) $('#map').src = mapSrc();
+  };
+  if (DEMO) $('#mapBtn').hidden = true;
+  $('#dest').addEventListener('input', wazeLinks);
+  $('#wDir').addEventListener('click', (e) => {
+    if (!$('#dest').value.trim()){ e.preventDefault(); $('#dest').focus(); }
+  });
+
+  // ---- Destination weather: same geocoding + forecast, shown separately ----
+  $('#destWxBtn').onclick = () => {
+    const raw = $('#dest').value.trim();
+    const box = $('#destWeather');
+    if (!raw){ $('#dest').focus(); return; }
+    box.hidden = false;
+    box.innerHTML = '<p>Checking destination weather…</p>';
+    geocodeTown(raw).then((rs) => {
+      if (!rs.length){ box.innerHTML = `<p>No match for “${raw}”. Try just the town name.</p>`; return; }
+      const r = rs[0];
+      const nm = r.name + (r.admin1 ? ', ' + r.admin1 : '') + (r.country ? ', ' + r.country : '');
+      return fetchForecast(+r.latitude.toFixed(3), +r.longitude.toFixed(3)).then((f) => {
+        const v = verdict(f.hours.slice(0, 6));
+        const word = ['Good to ride', 'Ride with care', 'Hold off'][v.lvl];
+        const cls = ['go', 'warn', 'stop'][v.lvl];
+        let html = `<p><b>${nm}</b> — <span style="font-weight:800">${word}</span></p>`;
+        if (v.why.length) html += `<ul>${v.why.map((m) => `<li>${m}</li>`).join('')}</ul>`;
+        else html += '<p>No rain, wind, or temperature problems in the next 6 hours there.</p>';
+        const later = f.allHours.slice(6, 12);
+        if (later.length){
+          const v2 = verdict(later);
+          const word2 = ['Good to ride', 'Ride with care', 'Hold off'][v2.lvl];
+          html += `<p style="margin-top:12px"><b>Return leg (about 6 hours later):</b> ${word2}.</p>` + (v2.why.length ? `<ul>${v2.why.map((m) => `<li>${m}</li>`).join('')}</ul>` : '<p>No rain, wind, or temperature problems on the return leg.</p>');
+        }
+        html += '<p class="sub" style="margin:10px 0 0">This is the destination verdict only. Your current location verdict above is unchanged.</p>';
+        box.innerHTML = html;
+        box.style.borderColor = cls === 'go' ? 'var(--go)' : cls === 'warn' ? 'var(--warn)' : 'var(--stop)';
+      });
+    }).catch(() => { box.innerHTML = '<p>Destination weather didn’t load. Check your connection and try again.</p>'; });
+  };
+
+
+  // Departure planner: score every hour in the next 48h, and show the 6-hour verdict for a chosen departure.
+  function departScore(x){
+    let s = 100 - x.pp;
+    if (x.c >= 95) s -= 60;
+    if (x.g >= 60) s -= 40; else if (x.g >= 40) s -= 20;
+    if (x.vis !== null && x.vis !== undefined && x.vis < 1000) s -= 20;
+    return s;
+  }
+  function renderDeparture(){
+    const box = $('#departBox');
+    if (!state.allHours || !state.allHours.length){ box.innerHTML = '<p>No 48-hour forecast yet.</p>'; return; }
+    const ranked = state.allHours.map((x, i) => ({ x, i, s: departScore(x) })).sort((a, b) => b.s - a.s);
+    const best = ranked[0], second = ranked[1];
+    box.innerHTML = `<p>Best departure in the next 48 hours: <button id="departJump" type="button" style="min-height:44px" aria-label="Jump to the best departure, ${best.x.label}">${best.x.label}</button> (score ${best.s}, rain ${best.x.pp}%, gusts ${W(best.x.g)} ${wu()}).</p>` +
+      (second ? `<p>Runner-up: <b>${second.x.label}</b> (score ${second.s}, rain ${second.x.pp}%, gusts ${W(second.x.g)} ${wu()}).</p>` : '') +
+      `<p class="sub" style="margin:6px 0 0">Score favours low rain chance, no storm, lower gusts, and better visibility. Tap the best departure to jump to it, or use the slider below for a specific departure time.</p>`;
+    // Jump-to-best-departure: a real button (native, so keyboard
+    // accessible, and already 44px tall by the site button rule) that
+    // sets the departure slider to the best hour and shows that hour's
+    // 6-hour verdict below. Nothing else about the planner changes:
+    // the scoring, the slider, and the ±1 hour steppers are untouched.
+    const jumpBtn = document.getElementById('departJump');
+    if (jumpBtn) jumpBtn.onclick = () => {
+      const el = $('#departRange');
+      el.value = best.i;
+      renderDepartResult();
+      const sliderBox = $('#departSliderBox');
+      if (sliderBox && sliderBox.scrollIntoView) sliderBox.scrollIntoView({ block: 'nearest' });
+    };
+    renderDepartResult();
+  }
+  function renderDepartResult(){
+    const res = $('#departResult');
+    if (!state.allHours || !state.allHours.length) return;
+    const off = +$('#departRange').value;
+    const start = state.allHours[off];
+    if (!start){ res.innerHTML = '<p>No forecast for that departure time.</p>'; return; }
+    const slice = state.allHours.slice(off, off + 6);
+    const v = verdict(slice);
+    const word = ['Good to ride', 'Ride with care', 'Hold off'][v.lvl];
+    $('#departLabel').textContent = off === 0 ? '0 hours (now)' : off + ' hours (' + start.label + ')';
+    res.innerHTML = `<p><b>Leaving at ${start.label}:</b> ${word}.</p>` + (v.why.length ? `<ul>${v.why.map((m) => `<li>${m}</li>`).join('')}</ul>` : '<p>No rain, wind, or temperature problems in the 6 hours after departure.</p>');
+  }
+  $('#departRange').addEventListener('input', renderDepartResult);
+  $('#departMinus').onclick = () => { const el = $('#departRange'); el.value = Math.max(0, +el.value - 1); renderDepartResult(); };
+  $('#departPlus').onclick = () => { const el = $('#departRange'); el.value = Math.min(47, +el.value + 1); renderDepartResult(); };
+  // Saved places: local only, one tap to switch back.
+  function getSaved(){ return load('savedPlaces', []); }
+  function renderSaved(){
+    const list = $('#savedList');
+    const places = getSaved();
+    if (!places.length){ list.innerHTML = '<p class="sub" style="margin:0">No saved places yet. Save the place you are checking now.</p>'; return; }
+    list.innerHTML = places.map((pl, i) => `<div class="srow"><button style="flex:1" data-i="${i}">${pl.name}</button><button data-del="${i}">Remove</button></div>`).join('');
+    list.querySelectorAll('[data-i]').forEach((b) => b.onclick = () => { const pl = getSaved()[+b.getAttribute('data-i')]; if (pl) useLocation({ lat: pl.lat, lon: pl.lon, name: pl.name, mode: 'manual' }); });
+    list.querySelectorAll('[data-del]').forEach((b) => b.onclick = () => { const pl = getSaved(); pl.splice(+b.getAttribute('data-del'), 1); save('savedPlaces', pl); renderSaved(); });
+  }
+  $('#savePlaceBtn').onclick = () => {
+    if (!loc) return;
+    const places = getSaved();
+    const name = loc.name || ('Place at ' + loc.lat + ', ' + loc.lon);
+    if (!places.some((pl) => pl.lat === loc.lat && pl.lon === loc.lon)) places.push({ lat: loc.lat, lon: loc.lon, name });
+    save('savedPlaces', places); renderSaved();
+  };
+  // ---- Ride timer — logic unchanged from the original ----
+  let timerId = null;
+  function fmtElapsed(ms){
+    const s = Math.floor(ms / 1000);
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+    const pad = (n) => (n < 10 ? '0' : '') + n;
+    return `${pad(h)}:${pad(m)}:${pad(sec)}`;
+  }
+  function showElapsed(){
+    const startAt = load('rideStart', null);
+    if (startAt) $('#elapsed').textContent = fmtElapsed(Date.now() - startAt);
+  }
+  function setTimerButtons(running){
+    $('#startRideBtn').disabled = running;
+    $('#stopRideBtn').disabled = !running;
+  }
+  function startTimer(){
+    const startAt = Date.now();
+    save('rideStart', startAt);
+    save('rideRunning', true);
+    setTimerButtons(true);
+    $('#timerNote').textContent = 'Ride started. Timer keeps running if you leave the page.';
+    if (timerId) clearInterval(timerId);
+    timerId = setInterval(showElapsed, 1000);
+    showElapsed();
+  }
+  function stopTimer(){
+    const startAt = load('rideStart', null);
+    if (startAt) $('#elapsed').textContent = fmtElapsed(Date.now() - startAt);
+    if (timerId) clearInterval(timerId);
+    timerId = null;
+    save('rideStart', null);
+    save('rideRunning', false);
+    setTimerButtons(false);
+    $('#timerNote').textContent = 'Ride stopped. Elapsed time above is your final ride time. Start ride again for a new ride.';
+  }
+  $('#startRideBtn').onclick = startTimer;
+  $('#stopRideBtn').onclick = stopTimer;
+  if (load('rideRunning', false) && load('rideStart', null)){
+    setTimerButtons(true);
+    timerId = setInterval(showElapsed, 1000);
+    showElapsed();
+    $('#timerNote').textContent = 'Ride in progress. Timer keeps running if you leave the page.';
+  } else {
+    setTimerButtons(false);
+  }
+
+  setUnitLabel();
+  renderLists();
+  start();
+})();
+</script>
+</body>
+</html>

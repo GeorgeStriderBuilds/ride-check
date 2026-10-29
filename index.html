@@ -197,7 +197,7 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
   const mem = {};
 
   /* ============================================================
-     DEMO MODE — clearly separated, kept on purpose.
+     DEMO MODE - clearly separated, kept on purpose.
      How to use: open the page with #demo, #demo=rain, #demo=storm,
      #demo=snow, #demo=fog, #demo=sunny or #demo=night at the end
      of the URL. Demo data replaces the live Open-Meteo forecast
@@ -269,7 +269,7 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
     return 'Storm';
   }
 
-  // ---- verdict logic — thresholds unchanged from the original ----
+  // ---- verdict logic - thresholds unchanged from the original ----
   function verdict(h){
     let lvl = 0;
     const why = [];
@@ -310,8 +310,8 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
     const ageMin = Math.round((Date.now() - state.fetchedAt.getTime()) / 60000);
     const stale = state.stale || ageMin > 60;
     el.textContent = stale
-      ? `Stale forecast from ${timeLabel(state.fetchedAt)} — tap Refresh for a new forecast.`
-      : `Forecast from ${timeLabel(state.fetchedAt)} — tap Refresh for a new forecast.`;
+      ? `Stale forecast from ${timeLabel(state.fetchedAt)}. Tap Refresh for a new forecast.`
+      : `Forecast from ${timeLabel(state.fetchedAt)}. Tap Refresh for a new forecast.`;
     el.classList.toggle('stale', stale);
   }
   function renderNow(){
@@ -397,7 +397,7 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
     const recentGust = past.length ? Math.max.apply(null, past.map((x) => x.g || 0)) : 0;
     let recentHtml = '';
     if (!past.length){
-      recentHtml = `<div class="recent"><h3>Recent weather</h3><p>No recent weather data for the last 3 hours.</p></div>`;
+      recentHtml = `<div class="recent"><h3>Recent weather</h3><p>No recent weather data for the last 3 hours. The verdict above still uses the live forecast.</p></div>`;
     } else if (pastRain.length && !nowWet){
       const lastIdx = past.map(isWet).lastIndexOf(true);
       const hoursAgo = past.length - 1 - lastIdx;
@@ -500,8 +500,8 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
     if (!state.allHours || !state.allHours.length){ box.innerHTML = '<p>No 24-hour forecast yet.</p>'; return; }
     const b = bestWindow(state.allHours);
     if (!b || b.n < 1) box.innerHTML = '<p>No window meeting that dry rule in the next 48 hours: every hour has rain chance 30% or more, a thunderstorm, or gusts 40 km/h or more. That does not mean it rains every hour.</p>';
-    else if (b.n === 1) box.innerHTML = `<p>Best window: <b>${b.start.label}</b> (1 hour) — rain chance under 30%, no thunderstorm, gusts under 40 km/h.</p>`;
-    else box.innerHTML = `<p>Best window: <b>${b.start.label} – ${b.end.label}</b> (${b.n} hours) — rain chance under 30%, no thunderstorm, gusts under 40 km/h.</p>`;
+    else if (b.n === 1) box.innerHTML = `<p>Best window: <b>${b.start.label}</b> (1 hour). Rain chance under 30%, no thunderstorm, gusts under 40 km/h.</p>`;
+    else box.innerHTML = `<p>Best window: <b>${b.start.label} to ${b.end.label}</b> (${b.n} hours). Rain chance under 30%, no thunderstorm, gusts under 40 km/h.</p>`;
     box.innerHTML += bestWindowTimeline();
   }
 
@@ -765,7 +765,7 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
   // Foreground auto-refresh: refetch about every 30 minutes while the
   // page is visible, so a verdict left open does not go stale.
   setInterval(() => { if (!document.hidden && state.fetchedAt && Date.now() - state.fetchedAt.getTime() > 30 * 60000) start(); }, 30 * 60000);
-  // ---- checklist — logic unchanged from the original ----
+  // ---- checklist - logic unchanged from the original ----
   const GROUPS = [
     { name: 'Motorcycle', items: ['Tire pressure and tread', 'Oil level', 'Chain, brakes, and fluids', 'Lights and signals', 'Fuel'] },
     { name: 'Riding gear', items: ['Helmet and visor', 'Gloves', 'Jacket and pants', 'Boots', 'Rain gear'] }
@@ -807,6 +807,8 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
   });
 
   $('#resetBtn').onclick = () => {
+    // Destructive: wipes today's checklists and the ride timer. Confirm first.
+    if (!confirm('Start a new ride? This clears today\u2019s checklists and resets the ride timer.')) return;
     save('checks', { day: today(), done: {} });
     renderLists();
     // Start new ride also resets the ride timer to 0.
@@ -826,7 +828,7 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
   };
   function setUnitLabel(){ $('#unitBtn').textContent = units === 'metric' ? '°C · km/h' : '°F · mph'; }
 
-  // ---- Waze links — destination weather is separate and does not change these ----
+  // ---- Waze links - destination weather is separate and does not change these ----
   let mapOn = false;
   function mapSrc(){ return `https://embed.waze.com/iframe?zoom=13&lat=${loc.lat}&lon=${loc.lon}&pin=1`; }
   function wazeLinks(){
@@ -834,7 +836,8 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
     $('#wDir').href = 'https://waze.com/ul?navigate=yes&q=' + encodeURIComponent($('#dest').value.trim());
   }
   $('#mapBtn').onclick = () => {
-    if (!loc) return;
+    // No location yet: open the place search instead of a dead tap.
+    if (!loc){ openSearch(true); return; }
     mapOn = !mapOn;
     $('#mapWrap').hidden = !mapOn;
     $('#mapBtn').textContent = mapOn ? 'Hide live map' : 'Show live map';
@@ -861,7 +864,7 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
         const v = verdict(f.hours.slice(0, 6));
         const word = ['Good to ride', 'Ride with care', 'Hold off'][v.lvl];
         const cls = ['go', 'warn', 'stop'][v.lvl];
-        let html = `<p><b>${nm}</b> — <span style="font-weight:800">${word}</span></p>`;
+        let html = `<p><b>${nm}</b>: <span style="font-weight:800">${word}</span></p>`;
         if (v.why.length) html += `<ul>${v.why.map((m) => `<li>${m}</li>`).join('')}</ul>`;
         else html += '<p>No rain, wind, or temperature problems in the next 6 hours there.</p>';
         const later = f.allHours.slice(6, 12);
@@ -930,19 +933,28 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
   function renderSaved(){
     const list = $('#savedList');
     const places = getSaved();
-    if (!places.length){ list.innerHTML = '<p class="sub" style="margin:0">No saved places yet. Save the place you are checking now.</p>'; return; }
+    if (!places.length){ list.innerHTML = '<p class="sub" style="margin:0">No saved places yet. Save the place you are checking now and it will be one tap away next time.</p>'; return; }
     list.innerHTML = places.map((pl, i) => `<div class="srow"><button style="flex:1" data-i="${i}">${pl.name}</button><button data-del="${i}">Remove</button></div>`).join('');
     list.querySelectorAll('[data-i]').forEach((b) => b.onclick = () => { const pl = getSaved()[+b.getAttribute('data-i')]; if (pl) useLocation({ lat: pl.lat, lon: pl.lon, name: pl.name, mode: 'manual' }); });
-    list.querySelectorAll('[data-del]').forEach((b) => b.onclick = () => { const pl = getSaved(); pl.splice(+b.getAttribute('data-del'), 1); save('savedPlaces', pl); renderSaved(); });
+    list.querySelectorAll('[data-del]').forEach((b) => b.onclick = () => {
+      const places = getSaved();
+      const i = +b.getAttribute('data-del');
+      const pl = places[i];
+      // Destructive: confirm before dropping a saved place.
+      if (pl && !confirm('Remove "' + pl.name + '" from saved places?')) return;
+      places.splice(i, 1); save('savedPlaces', places); renderSaved();
+    });
   }
   $('#savePlaceBtn').onclick = () => {
-    if (!loc) return;
+    // No location yet: a dead tap helps nobody. Open the place search
+    // so the user can pick a place first.
+    if (!loc){ openSearch(true); return; }
     const places = getSaved();
     const name = loc.name || ('Place at ' + loc.lat + ', ' + loc.lon);
     if (!places.some((pl) => pl.lat === loc.lat && pl.lon === loc.lon)) places.push({ lat: loc.lat, lon: loc.lon, name });
     save('savedPlaces', places); renderSaved();
   };
-  // ---- Ride timer — logic unchanged from the original ----
+  // ---- Ride timer - logic unchanged from the original ----
   let timerId = null;
   function fmtElapsed(ms){
     const s = Math.floor(ms / 1000);

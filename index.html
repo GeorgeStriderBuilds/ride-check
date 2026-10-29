@@ -59,7 +59,7 @@ a.btn{flex:1;display:flex;align-items:center;justify-content:center;text-align:c
 #now .meta{color:var(--mut);margin-top:2px;font-size:15px}
 #now .meta span{margin-right:16px}
 #verdict{background:linear-gradient(135deg,rgba(255,255,255,.12),var(--idle));color:var(--on);border-radius:22px;padding:22px 20px;box-shadow:0 14px 32px rgba(0,0,0,.28)}
-#verdict.go{background:linear-gradient(135deg,#2AA876,var(--go))}#verdict.warn{background:linear-gradient(135deg,#9A6B00,var(--warn))}#verdict.stop{background:linear-gradient(135deg,#D64A3F,var(--stop))}
+#verdict.go{background:linear-gradient(135deg,#1E7A4D,var(--go))}#verdict.warn{background:linear-gradient(135deg,#9A6B00,var(--warn))}#verdict.stop{background:linear-gradient(135deg,#D64A3F,var(--stop))}
 .verdict-head{display:flex;align-items:center;gap:12px}
 .verdict-icon{flex:none;width:44px;height:44px;color:#fff}
 .verdict-icon svg{width:44px;height:44px;display:block}
@@ -125,7 +125,7 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
   <header>
     <h1>Ride check</h1>
     <div class="bar">
-      <button id="unitBtn" aria-label="Switch units"></button>
+      <button id="unitBtn"></button>
       <button id="refreshBtn">Refresh</button>
     </div>
   </header>
@@ -919,6 +919,7 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
     const v = verdict(slice);
     const word = ['Good to ride', 'Ride with care', 'Hold off'][v.lvl];
     $('#departLabel').textContent = off === 0 ? '0 hours (now)' : off + ' hours (' + start.label + ')';
+    $('#departRange').setAttribute('aria-valuetext','leaving at '+start.label);
     res.innerHTML = `<p><b>Leaving at ${start.label}:</b> ${word}.</p>` + (v.why.length ? `<ul>${v.why.map((m) => `<li>${m}</li>`).join('')}</ul>` : '<p>No rain, wind, or temperature problems in the 6 hours after departure.</p>');
   }
   $('#departRange').addEventListener('input', renderDepartResult);

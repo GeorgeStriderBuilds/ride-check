@@ -278,7 +278,8 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
     const mn = (f) => Math.min.apply(null, h.map(f));
     const pp = mx((x) => x.pp), pr = mx((x) => x.pr);
     const g = mx((x) => x.g), tmin = mn((x) => x.t), tmax = mx((x) => x.t);
-    if (h.some((x) => x.c >= 95)) up(2, 'Thunderstorm in the forecast');
+    const tstorm = h.some((x) => x.c >= 95);
+    if (tstorm) up(2, 'Thunderstorm in the forecast');
     if (pr >= 1 || pp >= 60) up(2, `Rain likely (${pp}% chance)`);
     else if (pp >= 30 || pr >= 0.2) up(1, `Chance of rain (${pp}%)`);
     if (tmin <= 2) up(2, `Ice risk on the road (${T(tmin)}${tu()})`);
@@ -287,7 +288,16 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
     if (g >= 60) up(2, `Gusts up to ${W(g)} ${wu()}`);
     else if (g >= 40) up(1, `Crosswinds: gusts up to ${W(g)} ${wu()}`);
     if (h.some((x) => x.c === 45 || x.c === 48)) up(1, 'Fog: low visibility');
-    return { lvl, why };
+    // Headline: "Hold off" only when rain is really the story
+    // (thunderstorm, or rain chance 60%+). With no rain or a small
+    // chance, name the actual blocker instead.
+    let word = ['Good to ride', 'Ride with care', 'Hold off'][lvl];
+    if (lvl === 2 && !tstorm && pp < 60){
+      if (tmin <= 2) word = 'Ice risk';
+      else if (g >= 60) word = 'High gusts';
+      else word = 'Rain possible';
+    }
+    return { lvl, why, word };
   }
 
   function moodOf(x){
@@ -444,7 +454,7 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
       feelsHtml = `<div class="recent"><h3>At riding speed</h3><p>Estimated feels-like ${feels}${tu()} at 60 km/h (37 mph), vs ${T(tC)}${tu()} standing still${diffTxt}.${gustTxt}</p><p class="advice">${gear}</p></div>`;
     }
     const cls = ['go', 'warn', 'stop'][r.lvl];
-    const word = ['Good to ride', 'Ride with care', 'Hold off'][r.lvl];
+    const word = r.word;
     v.className = cls;
     const icon = verdictIcon(moodOf(state.hours[0]));
     let html = `<div class="verdict-head"><span class="verdict-icon">${icon}</span><p class="word">${word}</p></div>`;
@@ -453,27 +463,20 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
     if (r.why.length) detailsHtml += `<h3 style="margin:14px 0 6px;font-size:14px;letter-spacing:.06em;text-transform:uppercase">Next 6 hours</h3><div class="chips">${r.why.map((m) => `<span class="chip">${m}</span>`).join('')}</div>`;
     else detailsHtml += '<p>No rain, wind, or temperature problems in the next 6 hours.</p>';
     detailsHtml += '<p class="disclaimer">This is a weather guide, not a road check. Check the road yourself before you ride.</p>';
-    // Ride with care only: keep the verdict word always visible, and make
-    // the detail panels below it collapsible. Details start open, so a
-    // warning is never hidden by default; the button collapses them.
-    if (r.lvl === 1){
-      html += `<button id="careToggle" class="care-toggle" aria-expanded="true" aria-controls="careDetails"><span id="careToggleIcon">▾</span><small id="careToggleLabel">collapse</small></button>`;
-      html += `<div id="careDetails">${detailsHtml}</div>`;
-    } else {
-      html += detailsHtml;
-    }
+    // The detail window below the verdict word starts collapsed and is
+    // expandable, on every verdict level. The word itself stays visible.
+    html += `<button id="verdictToggle" class="care-toggle" aria-expanded="false" aria-controls="verdictDetails"><span id="verdictToggleIcon">▸</span><small id="verdictToggleLabel">expand</small></button>`;
+    html += `<div id="verdictDetails" hidden>${detailsHtml}</div>`;
     v.innerHTML = html;
-    const careToggle = document.getElementById('careToggle');
-    if (careToggle){
-      careToggle.onclick = () => {
-        const d = document.getElementById('careDetails');
-        const open = d.hidden;
-        d.hidden = !open;
-        careToggle.setAttribute('aria-expanded', String(open));
-        document.getElementById('careToggleIcon').textContent = open ? '▾' : '▸';
-        document.getElementById('careToggleLabel').textContent = open ? 'collapse' : 'expand';
-      };
-    }
+    const verdictToggle = document.getElementById('verdictToggle');
+    verdictToggle.onclick = () => {
+      const d = document.getElementById('verdictDetails');
+      const open = d.hidden;
+      d.hidden = !open;
+      verdictToggle.setAttribute('aria-expanded', String(open));
+      document.getElementById('verdictToggleIcon').textContent = open ? '▾' : '▸';
+      document.getElementById('verdictToggleLabel').textContent = open ? 'collapse' : 'expand';
+    };
     state.lvl = r.lvl;
     updateAgeLabel();
     renderBestWindow();
@@ -862,7 +865,7 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
       const nm = r.name + (r.admin1 ? ', ' + r.admin1 : '') + (r.country ? ', ' + r.country : '');
       return fetchForecast(+r.latitude.toFixed(3), +r.longitude.toFixed(3)).then((f) => {
         const v = verdict(f.hours.slice(0, 6));
-        const word = ['Good to ride', 'Ride with care', 'Hold off'][v.lvl];
+        const word = v.word;
         const cls = ['go', 'warn', 'stop'][v.lvl];
         let html = `<p><b>${nm}</b>: <span style="font-weight:800">${word}</span></p>`;
         if (v.why.length) html += `<ul>${v.why.map((m) => `<li>${m}</li>`).join('')}</ul>`;
@@ -870,7 +873,7 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
         const later = f.allHours.slice(6, 12);
         if (later.length){
           const v2 = verdict(later);
-          const word2 = ['Good to ride', 'Ride with care', 'Hold off'][v2.lvl];
+          const word2 = v2.word;
           html += `<p style="margin-top:12px"><b>Return leg (about 6 hours later):</b> ${word2}.</p>` + (v2.why.length ? `<ul>${v2.why.map((m) => `<li>${m}</li>`).join('')}</ul>` : '<p>No rain, wind, or temperature problems on the return leg.</p>');
         }
         html += '<p class="sub" style="margin:10px 0 0">This is the destination verdict only. Your current location verdict above is unchanged.</p>';
@@ -920,7 +923,7 @@ h2{font-size:17px;font-weight:700;margin:28px 2px 10px}
     if (!start){ res.innerHTML = '<p>No forecast for that departure time.</p>'; return; }
     const slice = state.allHours.slice(off, off + 6);
     const v = verdict(slice);
-    const word = ['Good to ride', 'Ride with care', 'Hold off'][v.lvl];
+    const word = v.word;
     $('#departLabel').textContent = off === 0 ? '0 hours (now)' : off + ' hours (' + start.label + ')';
     $('#departRange').setAttribute('aria-valuetext','leaving at '+start.label);
     res.innerHTML = `<p><b>Leaving at ${start.label}:</b> ${word}.</p>` + (v.why.length ? `<ul>${v.why.map((m) => `<li>${m}</li>`).join('')}</ul>` : '<p>No rain, wind, or temperature problems in the 6 hours after departure.</p>');
